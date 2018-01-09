@@ -2,5 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/opencv-330.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.fx.ide.css.jfx8_2.4.0.201605112122.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
