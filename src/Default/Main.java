@@ -180,6 +180,30 @@ public class Main {
 		}
 
 	}
+	
+	static public byte[] chiffrement(String id, String msg) {
+		AES aes;
+        byte b[]= null;
+        
+        String cle = "CERGYUCP_CART" + id;
+        aes = new AES(cle.getBytes());
+        
+        b = msg.getBytes();
+        b = aes.chiffrerMess(b);
+        
+        return b;
+	}
+	
+	static public byte[] dechiffrement(String id, byte b[]) {
+		AES aes;
+        
+        String cle = "CERGYUCP_CART" + id;
+        aes = new AES(cle.getBytes());
+        
+        b = aes.dechiffrerMess(b);
+        
+        return b;
+	}
 
 	public static void main(String[] args) throws CardException {
 		List<CardTerminal> terminauxDispos = Main.getTerminals();
@@ -202,6 +226,10 @@ public class Main {
 		//readInfo(channel);
 
 		carte.disconnect(false);
-
+		
+		/*byte b[]= chiffrement("001", "message a encoder");
+		
+		System.out.println(new String(b)); //msg codé
+		System.out.println(new String(dechiffrement("001", b))); //msg décodé*/
 	}
 }
