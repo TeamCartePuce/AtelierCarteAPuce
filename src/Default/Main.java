@@ -127,7 +127,7 @@ public class Main {
 		ResponseAPDU r2 = channel.transmit(commande2);
 
 		if (responseToString(r2) == true) {
-			System.out.println("Code PIN bon");
+			System.out.println("Code PIN0 bon");
 		}
 
 	}
@@ -180,29 +180,82 @@ public class Main {
 		}
 
 	}
-	
+
+	static public void readSerial(CardChannel channel) throws CardException {
+		System.out.println("\n Read serial");
+		// byte[] PIN0 = new byte[] { (byte) 0x80, (byte) 0xBE, (byte) 0x00,
+		// (byte) 0x00, (byte) 0x04 };
+		byte[] PIN0 = new byte[] { (byte) 0x80, (byte) 0xBE, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
+
+		CommandAPDU commande = new CommandAPDU(PIN0);
+		ResponseAPDU r = channel.transmit(commande);
+
+		//if (responseToString(r) == true) {
+			System.out.println("Lecture serial bon : " + toString(r.getBytes()));
+		//}
+
+	}
+
+	static public void readCardType(CardChannel channel) throws CardException {
+		System.out.println("\n Read card type");
+		byte[] PIN0 = new byte[] { (byte) 0x80, (byte) 0xBE, (byte) 0x10, (byte) 0x00, (byte) 0x04 };
+
+		CommandAPDU commande = new CommandAPDU(PIN0);
+		ResponseAPDU r = channel.transmit(commande);
+
+		if (responseToString(r) == true) {
+			System.out.println("Lecture card type bon : " + toString(r.getBytes()));
+		}
+
+	}
+
+	static public boolean verifyTypeCard() {
+		String tmp = toString(carte.getATR().getBytes());
+		if (tmp.equals(" 3b 02 53 01")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	static public byte[] chiffrement(String id, String msg) {
 		AES aes;
-        byte b[]= null;
-        
-        String cle = "CERGYUCP_CART" + id;
-        aes = new AES(cle.getBytes());
-        
-        b = msg.getBytes();
-        b = aes.chiffrerMess(b);
-        
-        return b;
+		byte b[] = null;
+
+		String cle = "CERGYUCP_CART" + id;
+		aes = new AES(cle.getBytes());
+
+		b = msg.getBytes();
+		b = aes.chiffrerMess(b);
+
+		return b;
 	}
-	
+
 	static public byte[] dechiffrement(String id, byte b[]) {
 		AES aes;
-        
-        String cle = "CERGYUCP_CART" + id;
-        aes = new AES(cle.getBytes());
-        
-        b = aes.dechiffrerMess(b);
-        
-        return b;
+
+		String cle = "CERGYUCP_CART" + id;
+		aes = new AES(cle.getBytes());
+
+		b = aes.dechiffrerMess(b);
+
+		return b;
+	}
+
+	static public void verifyPin1(CardChannel channel) throws CardException {
+
+		System.out.println("\n Verify PIN1");
+
+		byte[] truePin = new byte[] { (byte) 0x00, (byte) 0x20, (byte) 0x00, (byte) 0x39, (byte) 0x04, (byte) 0x11,
+				(byte) 0x11, (byte) 0x11, (byte) 0x11 };
+
+		CommandAPDU commande2 = new CommandAPDU(truePin);
+		ResponseAPDU r2 = channel.transmit(commande2);
+
+		if (responseToString(r2) == true) {
+			System.out.println("Code PIN1 bon");
+		}
+
 	}
 
 	public static void main(String[] args) throws CardException {
@@ -215,21 +268,31 @@ public class Main {
 		// ATR (answer To Reset)
 		// System.out.println(toString(carte.getATR().getBytes()));
 
+		boolean isGem = verifyTypeCard();
+		if (isGem == true) {
+			System.out.println("Type Carte valide");
+		} else {
+			System.out.println("Type Carte invalide");
+		}
+
 		CardChannel channel = carte.getBasicChannel();
 
-		verifyPin0(channel,"5555");
+		// verifyPin0(channel,"4444");
 
-		//setNewPin0(channel, "5555", "4444");
+		// setNewPin0(channel, "5555", "4444");
 
-		//addInfo(channel, "4444","1111");
+		// addInfo(channel, "4444","1111");
 
-		//readInfo(channel);
+		// readInfo(channel);
+
+		//readSerial(channel);
+		verifyPin1(channel);
 
 		carte.disconnect(false);
-		
-		/*byte b[]= chiffrement("001", "message a encoder");
-		
-		System.out.println(new String(b)); //msg codé
-		System.out.println(new String(dechiffrement("001", b))); //msg décodé*/
+
+		// byte b[]= chiffrement("001", "message a encoder");
+		//
+		// System.out.println(new String(b)); //msg codé
+		// System.out.println(new String(dechiffrement("001", b))); //msg décodé
 	}
 }
