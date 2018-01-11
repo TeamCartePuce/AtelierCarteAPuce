@@ -112,7 +112,7 @@ public class Main {
 
 	}
 
-	static public void verifyPin0(CardChannel channel, String actPin) throws CardException {
+	static public boolean verifyPin0(CardChannel channel, String actPin) throws CardException {
 
 		System.out.println("\n Verify PINO");
 		int apin1 = Integer.parseInt(String.valueOf(actPin.charAt(0)));
@@ -128,11 +128,16 @@ public class Main {
 
 		if (responseToString(r2) == true) {
 			System.out.println("Code PIN0 bon");
+			
+			return true;
+		}
+		else {
+			return false;
 		}
 
 	}
 
-	static public void addInfo(CardChannel channel, String actPin, String info) throws CardException {
+	static public void addInfoPIN0(CardChannel channel, String actPin, String info) throws CardException {
 		System.out.println("\n Put true PINO");
 
 		int apin1 = Integer.parseInt(String.valueOf(actPin.charAt(0)));
@@ -147,7 +152,7 @@ public class Main {
 		ResponseAPDU r2 = channel.transmit(commande2);
 
 		if (responseToString(r2) == true) {
-			System.out.println("Code PIN bon");
+			System.out.println("Code PIN0 bon");
 		}
 
 		System.out.println("\n Add info");
@@ -167,6 +172,54 @@ public class Main {
 		}
 
 	}
+	
+	static public void addInfoSERIAL(CardChannel channel, String actPin, String info) throws CardException {
+		System.out.println("\n Put true PINO");
+
+		int apin1 = Integer.parseInt(String.valueOf(actPin.charAt(0)));
+		int apin2 = Integer.parseInt(String.valueOf(actPin.charAt(1)));
+		int apin3 = Integer.parseInt(String.valueOf(actPin.charAt(2)));
+		int apin4 = Integer.parseInt(String.valueOf(actPin.charAt(3)));
+
+		byte[] truePin = new byte[] { (byte) 0x00, (byte) 0x20, (byte) 0x00, (byte) 0x07, (byte) 0x04, (byte) apin1,
+				(byte) apin2, (byte) apin3, (byte) apin4 };
+
+		CommandAPDU commande2 = new CommandAPDU(truePin);
+		ResponseAPDU r2 = channel.transmit(commande2);
+
+		if (responseToString(r2) == true) {
+			System.out.println("Code PIN0 bon");
+		}
+
+		System.out.println("\n Add serial");
+		int info1 = Integer.parseInt(String.valueOf(info.charAt(0)));
+
+		byte[] binfo = new byte[] { (byte) 0x80, (byte) 0xDE, (byte) 0x00, (byte) 0x3F, (byte) 0x04, (byte) info1};
+
+		CommandAPDU commande = new CommandAPDU(binfo);
+		ResponseAPDU r = channel.transmit(commande);
+
+		if (responseToString(r) == true) {
+			System.out.println("Ajout serial bon");
+		}
+
+	}
+	
+	static public String readSERIAL(CardChannel channel) throws CardException {
+		verifyPin1(channel);
+		
+		System.out.println("\n Read Serial");
+		byte[] PIN0 = new byte[] { (byte) 0x80, (byte) 0xBE, (byte) 0x00, (byte) 0x3F, (byte) 0x04 };
+
+		CommandAPDU commande = new CommandAPDU(PIN0);
+		ResponseAPDU r = channel.transmit(commande);
+
+		if (responseToString(r) == true) {
+			return toString(r.getBytes());
+		}
+
+		return "NOT";
+	}
 
 	static public void readInfo(CardChannel channel) throws CardException {
 		System.out.println("\n Read info");
@@ -180,7 +233,7 @@ public class Main {
 		}
 
 	}
-
+/*
 	static public void readSerial(CardChannel channel) throws CardException {
 		System.out.println("\n Read serial");
 		// byte[] PIN0 = new byte[] { (byte) 0x80, (byte) 0xBE, (byte) 0x00,
@@ -194,7 +247,7 @@ public class Main {
 			System.out.println("Lecture serial bon : " + toString(r.getBytes()));
 		//}
 
-	}
+	}*/
 
 	static public void readCardType(CardChannel channel) throws CardException {
 		System.out.println("\n Read card type");
@@ -270,7 +323,9 @@ public class Main {
 
 		boolean isGem = verifyTypeCard();
 		if (isGem == true) {
-			System.out.println("Type Carte valide");
+			System.out.println("Type Carte valide\n");
+			
+			System.out.println("Ajout d'un numéro de série dans le PIN 1");
 		} else {
 			System.out.println("Type Carte invalide");
 		}
@@ -281,12 +336,37 @@ public class Main {
 
 		// setNewPin0(channel, "5555", "4444");
 
-		// addInfo(channel, "4444","1111");
+		// addInfoPIN0(channel, "4444","1111");
 
 		// readInfo(channel);
 
 		//readSerial(channel);
-		verifyPin1(channel);
+		//verifyPin1(channel);
+		
+		System.out.println("Première execution du programme :");
+		addInfoSERIAL(channel, "4444","7");
+		
+		System.out.println("Deuxieme execution du programme :");
+		String serial = readSERIAL(channel);
+		if (serial.equals("NOT")) {
+			System.out.println("Lecture du serial impossible :(");
+		} else {
+			System.out.println("Serial : " + serial);
+			//ensuite : requête en BDD pour trouver le ID en fonction du serial
+			//récupérer le ID en base ainsi que le CODE PIN 0
+			//puis :
+			//if (verifyPin0(channel,CODE_PIN0_RECUP_EN_BASE) = true) {
+				//code pin 0 OK
+				// à partir de là, on peut générer un URL et un token unique
+				//générer token unique
+				//ajouter token + id + date_max en base
+				//générer URL
+				//reririger vers URL
+			//}
+			//else {
+			//	System.out.println("Code pin 0 incorrect..");
+			//}
+		}
 
 		carte.disconnect(false);
 
