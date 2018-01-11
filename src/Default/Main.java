@@ -311,68 +311,87 @@ public class Main {
 
 	}
 
-	public static void main(String[] args) throws CardException {
-		List<CardTerminal> terminauxDispos = Main.getTerminals();
-		// Premier terminal dispo
-		terminal = terminauxDispos.get(0);
-		// System.out.println(terminal.toString());
-		// Connexion à la carte
-		carte = terminal.connect("T=0");
-		// ATR (answer To Reset)
-		// System.out.println(toString(carte.getATR().getBytes()));
+	public static void main(String[] args) throws CardException, InterruptedException {
+		List<CardTerminal> terminauxDispos = null;
+		
+		while (true)
+		{
+			boolean suite = false;
 
-		boolean isGem = verifyTypeCard();
-		if (isGem == true) {
-			System.out.println("Type Carte valide\n");
+			while (suite == false)
+			{
+				try
+				{
+					terminauxDispos = Main.getTerminals();
+					terminal = terminauxDispos.get(0);
+					suite = true;
+				} catch (CardException e) {
+					//System.out.println("Erreur : terminal non connecté ?");
+					suite = false;
+					Thread.sleep(100);
+				}
+			}
 			
-			System.out.println("Ajout d'un numéro de série dans le PIN 1");
-		} else {
-			System.out.println("Type Carte invalide");
+			
+			if (suite == true)
+			{
+				// Connexion à la carte
+				carte = terminal.connect("T=0");
+				
+				boolean isGem = verifyTypeCard();
+				if (isGem == true) {
+					System.out.println("Type Carte valide\n");
+							
+					CardChannel channel = carte.getBasicChannel();
+
+					// verifyPin0(channel,"4444");
+
+					// setNewPin0(channel, "5555", "4444");
+
+					// addInfoPIN0(channel, "4444","1111");
+
+					// readInfo(channel);
+
+					//readSerial(channel);
+					//verifyPin1(channel);
+					
+					System.out.println("Première execution du programme :");
+					System.out.println("Ajout d'un numéro de série");
+					addInfoSERIAL(channel, "4444","7");
+					
+					System.out.println("Deuxieme execution du programme :");
+					String serial = readSERIAL(channel);
+					
+					if (serial.equals("NOT")) {
+						System.out.println("Lecture du serial impossible :(");
+					} else {
+						System.out.println("Serial : " + serial);
+						//ensuite : requête en BDD pour trouver le ID en fonction du serial
+						//récupérer le ID en base ainsi que le CODE PIN 0
+						//puis :
+						//if (verifyPin0(channel,CODE_PIN0_RECUP_EN_BASE) = true) {
+							//code pin 0 OK
+							// à partir de là, on peut générer un URL et un token unique
+							//générer token unique
+							//ajouter token + id + date_max en base
+							//générer URL
+							//reririger vers URL
+						//}
+						//else {
+						//	System.out.println("Code pin 0 incorrect..");
+						//}
+					}
+
+					carte.disconnect(false);
+
+					// byte b[]= chiffrement("001", "message a encoder");
+					//
+					// System.out.println(new String(b)); //msg codé
+					// System.out.println(new String(dechiffrement("001", b))); //msg décodé
+				} else {
+					System.out.println("Type Carte invalide. Reessayez");
+				}
+			}
 		}
-
-		CardChannel channel = carte.getBasicChannel();
-
-		// verifyPin0(channel,"4444");
-
-		// setNewPin0(channel, "5555", "4444");
-
-		// addInfoPIN0(channel, "4444","1111");
-
-		// readInfo(channel);
-
-		//readSerial(channel);
-		//verifyPin1(channel);
-		
-		System.out.println("Première execution du programme :");
-		addInfoSERIAL(channel, "4444","7");
-		
-		System.out.println("Deuxieme execution du programme :");
-		String serial = readSERIAL(channel);
-		if (serial.equals("NOT")) {
-			System.out.println("Lecture du serial impossible :(");
-		} else {
-			System.out.println("Serial : " + serial);
-			//ensuite : requête en BDD pour trouver le ID en fonction du serial
-			//récupérer le ID en base ainsi que le CODE PIN 0
-			//puis :
-			//if (verifyPin0(channel,CODE_PIN0_RECUP_EN_BASE) = true) {
-				//code pin 0 OK
-				// à partir de là, on peut générer un URL et un token unique
-				//générer token unique
-				//ajouter token + id + date_max en base
-				//générer URL
-				//reririger vers URL
-			//}
-			//else {
-			//	System.out.println("Code pin 0 incorrect..");
-			//}
-		}
-
-		carte.disconnect(false);
-
-		// byte b[]= chiffrement("001", "message a encoder");
-		//
-		// System.out.println(new String(b)); //msg codé
-		// System.out.println(new String(dechiffrement("001", b))); //msg décodé
 	}
 }
